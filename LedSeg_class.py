@@ -47,7 +47,7 @@ class Seg7:
                    output.append(num[element])
                    loc += 1
             output[pos-1] = output[pos-1]|0x80
-            for i in range(4):
+            for i in range(len(output)):
                 self.i2cwrite(count[i], output[i].to_bytes(1,'big'))
 
 
