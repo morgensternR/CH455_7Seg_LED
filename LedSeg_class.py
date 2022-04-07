@@ -29,29 +29,46 @@ class Seg7:
     def readout(self, data):
         self.reset()
         loc = 0
+        if data >= 10000:
+            data = str('{:.0e}'.format(data)).replace('e+0', 'e')
         data = str(data).replace('e-0', 'e-')
-        for element in data:
-            if element in num:
-                self.i2cwrite(count[loc] , num[element])
-                loc += 1
+        pos = data.find('.')
+        output = []
+        if pos == -1:
+            for element in data:
+                if element in num:
+                    #output.append(num[element])
+                    self.i2cwrite(count[loc], num[element].to_bytes(1, 'big'))
+                    loc += 1
+
+        else:
+            for element in data:
+                if element in num:
+                   output.append(num[element])
+                   loc += 1
+            output[pos-1] = output[pos-1]|0x80
+            for i in range(4):
+                self.i2cwrite(count[i], output[i].to_bytes(1,'big'))
+
+
     def reset(self):
         for i in count:
             self.i2cwrite(i, num[' '])
+
     #Dictionary and list to use
 num = {' ':(b'\x00'),
-        '0':(b'\x3f'),
-        '1':(b'\x06'),
-        '2':(b'\x5b'),
-        '3':(b'\x4f'),
-        '4':(b'\x66'),
-        '5':(b'\x6d'),
-        '6':(b'\x7d'),
-        '7':(b'\x07'),
-        '8':(b'\x7f'),
-        '9':(b'\x67'),
-        'E':(b'\x79'),
-        'e':(b'\x79'),
-        '.':(b'\x80'),
-        '-': (b'\x40')}
+        '0':(63),
+        '1':(6),
+        '2':(91),
+        '3':(79),
+        '4':(102),
+        '5':(109),
+        '6':(125),
+        '7':(7),
+        '8':(127),
+        '9':(103),
+        'E':(121),
+        'e':(121),
+        '-':(64)}
 
 count = [0x34,0x35,0x36, 0x37]
